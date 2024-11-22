@@ -1,0 +1,126 @@
+
+###html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Блог</title>
+</head>
+<body>
+    <header>
+        <h1>Добро пожаловать в блог</h1>
+        <div id="auth">
+            <input id="username" placeholder="Имя пользователя">
+            <button id="login-btn">Войти/Регистрация</button>
+        </div>
+    </header>
+    <main>
+        <section id="new-post-section">
+            <textarea id="post-content" placeholder="Ваш пост..."></textarea>
+            <input id="post-tags" placeholder="Теги (через запятую)">
+            <button onclick="submitPost()">Опубликовать</button>
+        </section>
+        <section id="posts"></section>
+    </main>
+    <footer>
+        <p>© 2023 Блог</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
+```
+
+### styles.css
+
+```css
+body { font-family: Arial, sans-serif; }
+header { background: #f4f4f4; padding: 1em; }
+main { padding: 1em; }
+textarea { width: 100%; height: 100px; }
+button { margin-top: 1em; }
+.post { border: 1px solid #ccc; padding: 1em; margin-top: 1em; }
+```
+
+### script.js
+
+```javascript
+let currentUser = null;
+const posts = [];
+const users = [];
+
+document.getElementById('login-btn').onclick = function() {
+    const username = document.getElementById('username').value;
+    if (username) {
+        currentUser = username;
+        alert(`Добро пожаловать, ${currentUser}!`);
+    }
+};
+
+function submitPost() {
+    const content = document.getElementById("post-content").value;
+    const tags = document.getElementById("post-tags").value.split(",").map(tag => tag.trim());
+    if (content && currentUser) {
+        const post = { id: posts.length + 1, content, tags, author: currentUser, comments: [] };
+        posts.push(post);
+        displayPosts();
+        document.getElementById("post-content").value = '';
+        document.getElementById("post-tags").value = '';
+    } else {
+        alert("Сначала войдите в систему и заполните пост!");
+    }
+}
+
+function displayPosts() {
+    const postsContainer = document.getElementById("posts");
+    postsContainer.innerHTML = '';
+    posts.forEach(post => {
+        const postElement = document.createElement("div");
+        postElement.classList.add('post');
+        postElement.innerHTML = `
+            <p><strong>${post.author}</strong>: ${post.content}</p>
+            <p><em>Теги: ${post.tags.join(', ')}</em></p>
+            <textarea id="comment-input-${post.id}" placeholder="Ваш комментарий..."></textarea>
+            <button onclick="submitComment(${post.id})">Комментировать</button>
+            <div id="comments-${post.id}">${post.comments.map(comment => `<p>${comment}</p>`).join('')}</div>
+            <button onclick="editPost(${post.id})">Редактировать</button>
+            <button onclick="deletePost(${post.id})">Удалить</button>
+        `;
+        postsContainer.appendChild(postElement);
+    });
+}
+
+function submitComment(postId) {
+    const commentInput = document.getElementById(`comment-input-${postId}`);
+    const comment = commentInput.value;
+    if (comment) {
+        const post = posts.find(p => p.id === postId);
+        post.comments.push(comment);
+        displayPosts();
+        commentInput.value = '';
+    }
+}
+
+function editPost(postId) {
+    const post = posts.find(p => p.id === postId);
+    if (post && post.author === currentUser) {
+        const newContent = prompt("Редактировать пост:", post.content);
+        if (newContent) {
+            post.content = newContent;
+            displayPosts();
+        }
+    } else {
+        alert("Вы не можете редактировать этот пост.");
+    }
+}
+
+function deletePost(postId) {
+
+
+const postIndex = posts.findIndex(p => p.id === postId);
+    if (postIndex !== -1) {
+        posts.splice(postIndex, 1);
+        displayPosts();
+    }
+}
